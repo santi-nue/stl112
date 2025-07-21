@@ -30,8 +30,10 @@ def download_pdf(pdf_url, folder):
 
 if __name__ == "__main__":
     links = get_all_links(URL)
+    print(Links) 
     for link in links:
         if is_pdf_link(link):
             # Make sure to handle relative URLs
             pdf_url = urljoin(URL, link)
             download_pdf(pdf_url, DOWNLOAD_FOLDER)
+            print(pdf_url) 
