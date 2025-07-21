@@ -3,6 +3,7 @@ import time
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium_stealth import stealth
 from urllib.parse import urljoin, urlparse
 from webdriver_manager.chrome import ChromeDriverManager
@@ -25,7 +26,8 @@ def get_selenium_driver():
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option('useAutomationExtension', False)
 
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
     stealth(
         driver,
@@ -38,6 +40,8 @@ def get_selenium_driver():
     )
 
     return driver
+
+
 
 def get_all_pdf_links(driver, url):
     driver.get(url)
