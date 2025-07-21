@@ -1,39 +1,31 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import time
 import os
 import requests
 from urllib.parse import urljoin
-from bs4 import BeautifulSoup
 
-# Target URL
-URL = "https://danjovi.com/piano/"  # Change to your desired page
+URL = "https://danjovi.com/piano/"  # Change to your WordPress site
 DOWNLOAD_FOLDER = "pdf_downloads"
 
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-def get_all_links(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
-    # Extract all hrefs from <a> tags
-    links = [a.get("href") for a in soup.find_all("a", href=True)]
-    return links
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # Run Chrome in headless mode
 
-def is_pdf_link(link):
-    return link.lower().endswith(".pdf")
+with webdriver.Chrome(options=chrome_options) as driver:
+    driver.get(URL)
+    time.sleep(5)  # Wait for JavaScript to load content; adjust if needed
 
-def download_pdf(pdf_url, folder):
-    local_filename = os.path.join(folder, pdf_url.split("/")[-1])
-    response = requests.get(pdf_url, stream=True)
-    with open(local_filename, "wb") as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                f.write(chunk)
-    print(f"Downloaded: {local_filename}")
+    links = [a.get_attribute('href') for a in driver.find_elements("tag name", "a")]
+    pdf_links = [link for link in links if link and link.lower().endswith('.pdf')]
 
-if __name__ == "__main__":
-    links = get_all_links(URL)
-    print(links) 
-    for link in links:
-        if is_pdf_link(link):
-            # Make sure to handle relative URLs
-            pdf_url = urljoin(URL, link)
-            download_pdf(pdf_url, DOWNLOAD_FOLDER)
-            print(pdf_url) 
+    for link in pdf_links:
+        pdf_url = urljoin(URL, link)
+        filename = os.path.join(DOWNLOAD_FOLDER, os.path.basename(pdf_url))
+        print(f"Downloading {pdf_url}")
+        r = requests.get(pdf_url, stream=True)
+        with open(filename, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
