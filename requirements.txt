@@ -1,2 +1,5 @@
-requests
 selenium
+selenium-stealth
+requests
+webdriver-manager
+
